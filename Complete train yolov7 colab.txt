@@ -1,0 +1,49 @@
+					YOLOV7 COLLEGE PROJECT DETECTION
+
+!git clone https://github.com/WongKinYiu/yolov7
+%cd yolov7
+!pip install -r requirements.txt
+
+
+
+!pip install roboflow
+
+from roboflow import Roboflow
+rf = Roboflow(api_key="1l3tjHoB6IghQkFbJ7Su")
+project = rf.workspace("id-afc0b").project("final-year-college-project")
+dataset = project.version(1).download("yolov7")
+
+
+%cd /content/yolov7
+!wget "https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7.pt"
+
+
+%cd /content/yolov7
+!python train.py --batch 16 --cfg cfg/training/yolov7.yaml  --epochs 300  --data {dataset.location}/data.yaml --weights 'yolov7.pt' --device 0
+
+import glob
+from IPython.display import Image, display
+
+i=0
+limit=100
+for imageName in glob.glob("/content/yolov7/runs/detect/exp5/*.jpg"):
+  if i<limit:
+    display(Image(filename=imageName))
+    print("\n")
+  i=i+1
+
+
+
+!zip -r export.zip runs/detect
+!zip -r export.zip runs/train/exp/weights/best.pt
+!zip export.zip runs/train/exp/*
+
+python detect.py --weights yolov7.pt --conf 0.25 --img-size 640 --source inference/images/horses.jpg
+
+
+python detect.py --weights yolov7.pt --conf 0.25 --img-size 640 --source yourvideo.mp4
+
+
+python detect.py --weights yolov7.pt --conf 0.25 --img-size 640 --source 0
+
+
